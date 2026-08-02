@@ -1,4 +1,4 @@
-package hei.school.nmn.repository.model;
+package hei.school.nmn.entity.model;
 
 import hei.school.nmn.entity.UserRole;
 import jakarta.persistence.Column;
@@ -7,7 +7,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.UUID;
 

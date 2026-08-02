@@ -1,7 +1,7 @@
 package hei.school.nmn.mapper;
 
 import hei.school.nmn.entity.User;
-import hei.school.nmn.repository.model.JUser;
+import hei.school.nmn.entity.model.JUser;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

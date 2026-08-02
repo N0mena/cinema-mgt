@@ -1,7 +1,6 @@
 package hei.school.nmn.repository;
 
-import hei.school.nmn.repository.model.JUser;
-import org.apache.catalina.User;
+import hei.school.nmn.entity.model.JUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
