@@ -13,20 +13,20 @@ import org.springframework.web.server.ResponseStatusException;
 @AllArgsConstructor
 public class AuthorizationService {
 
-    private final UserService userService;
+  private final UserService userService;
 
-    public void requireManager(UUID userId) {
-        if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated user required");
-        }
-        User user;
-        try {
-            user = userService.getEntityById(userId);
-        } catch (NotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unknown user: " + userId);
-        }
-        if (user.role() != UserRole.MANAGER) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only managers can update movies");
-        }
+  public void requireManager(UUID userId) {
+    if (userId == null) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated user required");
     }
+    User user;
+    try {
+      user = userService.getEntityById(userId);
+    } catch (NotFoundException e) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unknown user: " + userId);
+    }
+    if (user.role() != UserRole.MANAGER) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only managers can update movies");
+    }
+  }
 }
