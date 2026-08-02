@@ -17,26 +17,22 @@ import org.springframework.web.server.ResponseStatusException;
 @AllArgsConstructor
 public class MovieController {
 
-    private final MovieService movieService;
-    private final AuthorizationService authorizationService;
+  private final MovieService movieService;
+  private final AuthorizationService authorizationService;
 
-    @PutMapping("/movies/{id}")
-    public Movie updateById(
-            @RequestHeader UUID userId,
-            @PathVariable UUID id,
-            @RequestBody Movie movie) {
-        authorizationService.requireManager(userId);
-        return movieService.update(id, movie);
-    }
+  @PutMapping("/movies/{id}")
+  public Movie updateById(
+      @RequestHeader UUID userId, @PathVariable UUID id, @RequestBody Movie movie) {
+    authorizationService.requireManager(userId);
+    return movieService.update(id, movie);
+  }
 
-    @PutMapping("/movies")
-    public Movie update(
-            @RequestHeader UUID userId,
-            @RequestBody Movie movie) {
-        authorizationService.requireManager(userId);
-        if (movie.id() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Movie id is required");
-        }
-        return movieService.update(movie.id(), movie);
+  @PutMapping("/movies")
+  public Movie update(@RequestHeader UUID userId, @RequestBody Movie movie) {
+    authorizationService.requireManager(userId);
+    if (movie.id() == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Movie id is required");
     }
+    return movieService.update(movie.id(), movie);
+  }
 }
