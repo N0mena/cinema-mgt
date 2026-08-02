@@ -1,39 +1,36 @@
 package hei.school.nmn.mapper;
 
+import hei.school.nmn.endpoint.dto.request.UserRequest;
+import hei.school.nmn.endpoint.dto.response.UserResponse;
 import hei.school.nmn.entity.User;
-import hei.school.nmn.entity.model.JUser;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class UserMapper {
-    public User toModel(JUser entity) {
+    public static User toEntity(UserRequest request) {
         return User.builder()
-                .id(entity.getId())
-                .firstName(entity.getFirstName())
-                .lastName(entity.getLastName())
-                .birthdate(entity.getBirthdate())
-                .email(entity.getEmail())
-                .phone(entity.getPhone())
-                .role(entity.getRole())
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .birthdate(request.birthdate())
+                .email(request.email())
+                .password(request.password())
+                .phone(request.phone())
+                .role(request.role())
                 .build();
     }
 
-    public List<User> toModel(List<JUser> entities) {
-        return entities.stream().map(this::toModel).toList();
-    }
-
-    public JUser toEntity(User model) {
-        return JUser.builder()
-                .id(model.id())
-                .firstName(model.firstName())
-                .lastName(model.lastName())
-                .birthdate(model.birthdate())
-                .email(model.email())
-                .phone(model.phone())
-                .role(model.role())
-                .build();
+    public static UserResponse toResponse(User user) {
+        return new UserResponse(
+                user.id(),
+                user.firstName(),
+                user.lastName(),
+                user.birthdate(),
+                user.email(),
+                user.phone(),
+                user.role()
+        );
     }
 
 }
