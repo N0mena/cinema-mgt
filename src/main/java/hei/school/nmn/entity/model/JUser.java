@@ -1,6 +1,6 @@
 package hei.school.nmn.entity.model;
 
-import hei.school.nmn.entity.UserRole;
+import hei.school.nmn.entity.enums.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;

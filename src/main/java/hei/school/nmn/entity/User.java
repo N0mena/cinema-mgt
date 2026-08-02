@@ -1,5 +1,6 @@
 package hei.school.nmn.entity;
 
+import hei.school.nmn.entity.enums.UserRole;
 import lombok.Builder;
 
 import java.time.LocalDate;
