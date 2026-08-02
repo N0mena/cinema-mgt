@@ -13,8 +13,10 @@ public class UserMapper {
                 .id(entity.getId())
                 .firstName(entity.getFirstName())
                 .lastName(entity.getLastName())
-                .userName(entity.getUserName())
+                .birthdate(entity.getBirthdate())
                 .email(entity.getEmail())
+                .phone(entity.getPhone())
+                .role(entity.getRole())
                 .build();
     }
 
@@ -27,8 +29,10 @@ public class UserMapper {
                 .id(model.id())
                 .firstName(model.firstName())
                 .lastName(model.lastName())
-                .userName(model.userName())
+                .birthdate(model.birthdate())
                 .email(model.email())
+                .phone(model.phone())
+                .role(model.role())
                 .build();
     }
 

@@ -1,5 +1,6 @@
 package hei.school.nmn.repository.model;
 
+import hei.school.nmn.entity.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -7,6 +8,7 @@ import jakarta.persistence.Table;
 import lombok.*;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -22,9 +24,16 @@ public class JUser {
     @Column(nullable = false)
     private String lastName;
     @Column(nullable = false)
-    private String userName;
+    private LocalDate birthdate;
     @Column(nullable = false)
     private String email;
+    @Column
+    private String password;
+    @Column
+    private String phone;
+    @Column
+    private UserRole role;
+
 
 
 
