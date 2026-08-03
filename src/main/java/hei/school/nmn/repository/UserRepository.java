@@ -1,6 +1,6 @@
 package hei.school.nmn.repository;
 
-import hei.school.nmn.entity.model.JUser;
+import hei.school.nmn.repository.model.JUser;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

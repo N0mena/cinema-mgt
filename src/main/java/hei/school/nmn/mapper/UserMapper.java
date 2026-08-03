@@ -3,7 +3,7 @@ package hei.school.nmn.mapper;
 import hei.school.nmn.endpoint.dto.request.UserRequest;
 import hei.school.nmn.endpoint.dto.response.UserResponse;
 import hei.school.nmn.entity.User;
-import hei.school.nmn.entity.model.JUser;
+import hei.school.nmn.repository.model.JUser;
 import org.springframework.stereotype.Component;
 
 @Component

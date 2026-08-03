@@ -1,65 +1,57 @@
-package hei.school.nmn.entity.model;
+package hei.school.nmn.repository.model;
 
+import hei.school.nmn.entity.enums.Genre;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
-@Table(name = "rooms")
+@Table(name = "movies")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@ToString(exclude = {"seats", "projections"})
-@EqualsAndHashCode(of = "id")
-public class JRoom {
+public class JMovie {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(nullable = false, unique = true)
-  private String number;
-
   @Column(nullable = false)
-  private Integer capacity;
+  private String title;
+
+  @Enumerated(EnumType.STRING)
+  @Column
+  private Genre genre;
+
+  @Column(length = 2000)
+  private String description;
+
+  private Duration duration;
 
   @Builder.Default
   @OneToMany(
-      mappedBy = "room",
+      mappedBy = "movie",
       cascade = CascadeType.ALL,
       orphanRemoval = true,
       fetch = FetchType.LAZY)
-  private List<JSeat> seats = new ArrayList<>();
-
-  @Builder.Default
-  @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
   private List<JProjection> projections = new ArrayList<>();
-
-  public void addSeat(JSeat seat) {
-    seats.add(seat);
-    seat.setRoom(this);
-  }
-
-  public void removeSeat(JSeat seat) {
-    seats.remove(seat);
-    seat.setRoom(null);
-  }
 }

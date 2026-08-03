@@ -1,8 +1,8 @@
 package hei.school.nmn.service;
 
 import hei.school.nmn.entity.Seat;
-import hei.school.nmn.entity.model.JRoom;
-import hei.school.nmn.entity.model.JSeat;
+import hei.school.nmn.repository.model.JRoom;
+import hei.school.nmn.repository.model.JSeat;
 import hei.school.nmn.mapper.SeatMapper;
 import hei.school.nmn.repository.RoomRepository;
 import hei.school.nmn.repository.SeatRepository;

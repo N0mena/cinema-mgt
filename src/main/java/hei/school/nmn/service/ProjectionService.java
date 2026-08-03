@@ -1,9 +1,9 @@
 package hei.school.nmn.service;
 
 import hei.school.nmn.entity.Projection;
-import hei.school.nmn.entity.model.JMovie;
-import hei.school.nmn.entity.model.JProjection;
-import hei.school.nmn.entity.model.JRoom;
+import hei.school.nmn.repository.model.JMovie;
+import hei.school.nmn.repository.model.JProjection;
+import hei.school.nmn.repository.model.JRoom;
 import hei.school.nmn.mapper.ProjectionMapper;
 import hei.school.nmn.repository.MovieRepository;
 import hei.school.nmn.repository.ProjectionRepository;

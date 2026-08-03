@@ -1,7 +1,7 @@
 package hei.school.nmn.repository;
 
 import hei.school.nmn.entity.enums.ReservationStatus;
-import hei.school.nmn.entity.model.JReservation;
+import hei.school.nmn.repository.model.JReservation;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;

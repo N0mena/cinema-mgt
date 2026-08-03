@@ -1,8 +1,8 @@
 package hei.school.nmn.mapper;
 
 import hei.school.nmn.entity.Seat;
-import hei.school.nmn.entity.model.JRoom;
-import hei.school.nmn.entity.model.JSeat;
+import hei.school.nmn.repository.model.JRoom;
+import hei.school.nmn.repository.model.JSeat;
 import org.springframework.stereotype.Component;
 
 @Component

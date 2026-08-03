@@ -1,4 +1,4 @@
-package hei.school.nmn.entity.model;
+package hei.school.nmn.repository.model;
 
 import jakarta.persistence.*;
 import java.util.UUID;

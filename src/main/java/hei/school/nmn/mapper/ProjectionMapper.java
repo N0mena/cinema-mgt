@@ -1,9 +1,9 @@
 package hei.school.nmn.mapper;
 
 import hei.school.nmn.entity.Projection;
-import hei.school.nmn.entity.model.JMovie;
-import hei.school.nmn.entity.model.JProjection;
-import hei.school.nmn.entity.model.JRoom;
+import hei.school.nmn.repository.model.JMovie;
+import hei.school.nmn.repository.model.JProjection;
+import hei.school.nmn.repository.model.JRoom;
 import org.springframework.stereotype.Component;
 
 @Component

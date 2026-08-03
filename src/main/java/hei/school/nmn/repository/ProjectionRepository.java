@@ -1,6 +1,6 @@
 package hei.school.nmn.repository;
 
-import hei.school.nmn.entity.model.JProjection;
+import hei.school.nmn.repository.model.JProjection;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

@@ -1,7 +1,7 @@
 package hei.school.nmn.mapper;
 
 import hei.school.nmn.entity.Movie;
-import hei.school.nmn.entity.model.JMovie;
+import hei.school.nmn.repository.model.JMovie;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;

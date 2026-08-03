@@ -1,7 +1,7 @@
 package hei.school.nmn.mapper;
 
 import hei.school.nmn.entity.Room;
-import hei.school.nmn.entity.model.JRoom;
+import hei.school.nmn.repository.model.JRoom;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
