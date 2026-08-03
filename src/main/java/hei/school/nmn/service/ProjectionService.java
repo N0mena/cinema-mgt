@@ -1,13 +1,13 @@
 package hei.school.nmn.service;
 
 import hei.school.nmn.entity.Projection;
-import hei.school.nmn.repository.model.JMovie;
-import hei.school.nmn.repository.model.JProjection;
-import hei.school.nmn.repository.model.JRoom;
 import hei.school.nmn.mapper.ProjectionMapper;
 import hei.school.nmn.repository.MovieRepository;
 import hei.school.nmn.repository.ProjectionRepository;
 import hei.school.nmn.repository.RoomRepository;
+import hei.school.nmn.repository.model.JMovie;
+import hei.school.nmn.repository.model.JProjection;
+import hei.school.nmn.repository.model.JRoom;
 import hei.school.nmn.service.exception.NotFoundException;
 import java.time.Instant;
 import java.util.List;

@@ -1,9 +1,9 @@
 package hei.school.nmn.service;
 
 import hei.school.nmn.entity.Movie;
-import hei.school.nmn.repository.model.JMovie;
 import hei.school.nmn.mapper.MovieMapper;
 import hei.school.nmn.repository.MovieRepository;
+import hei.school.nmn.repository.model.JMovie;
 import hei.school.nmn.service.exception.NotFoundException;
 import java.util.List;
 import java.util.UUID;
