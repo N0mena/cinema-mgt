@@ -3,6 +3,7 @@ package hei.school.nmn.service;
 import hei.school.nmn.endpoint.dto.request.UserRequest;
 import hei.school.nmn.endpoint.dto.response.UserResponse;
 import hei.school.nmn.entity.User;
+import hei.school.nmn.entity.enums.UserRole;
 import hei.school.nmn.mapper.UserMapper;
 import hei.school.nmn.repository.UserRepository;
 import hei.school.nmn.repository.model.JUser;
@@ -27,7 +28,17 @@ public class UserService {
     if (userRepository.existsByEmail(request.email())) {
       throw new IllegalStateException("An account already exists for email: " + request.email());
     }
-    JUser jUser = UserMapper.toJ(UserMapper.toEntity(request));
+    JUser jUser =
+        UserMapper.toJ(
+            UserMapper.toEntity(
+                new UserRequest(
+                    request.firstName(),
+                    request.lastName(),
+                    request.birthdate(),
+                    request.email(),
+                    request.password(),
+                    request.phone(),
+                    UserRole.CLIENT)));
     jUser.setPassword(passwordEncoder.encode(request.password()));
     return UserMapper.toResponse(UserMapper.toDomain(userRepository.save(jUser)));
   }
