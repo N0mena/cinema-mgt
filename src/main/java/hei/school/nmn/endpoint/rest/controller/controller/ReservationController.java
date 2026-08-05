@@ -31,8 +31,7 @@ public class ReservationController {
   }
 
   @GetMapping("/reservations/{id}")
-  public ReservationResponse getById(
-      @AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
+  public ReservationResponse getById(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
     ReservationResponse reservation = reservationService.getById(id);
     UUID principalId = UUID.fromString(jwt.getSubject());
     String role = jwt.getClaimAsString("role");

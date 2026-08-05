@@ -214,13 +214,7 @@ class ReservationIT extends FacadeIT {
     return userService
         .register(
             new UserRequest(
-                "John",
-                "Doe",
-                LocalDate.of(1990, 1, 1),
-                email,
-                "password123",
-                "0323456789",
-                role))
+                "John", "Doe", LocalDate.of(1990, 1, 1), email, "password123", "0323456789", role))
         .id();
   }
 
