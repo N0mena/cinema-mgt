@@ -1,0 +1,613 @@
+openapi: 3.0.3
+info:
+  title: Cinema Reservation API
+  description: >
+    Movie booking API. CLIENT, EMPLOYEE and MANAGER roles share the same
+    endpoints with different permission levels (see per-operation security
+    notes below).
+  version: 1.0.0
+
+servers:
+  - url: /api
+
+tags:
+  - name: rooms
+  - name: seats
+  - name: movies
+  - name: projections
+  - name: reservations
+  - name: users
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /rooms:
+    get:
+      tags: [rooms]
+      summary: List rooms
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
+    post:
+      tags: [rooms]
+      summary: Create a room
+      description: Restricted to MANAGER.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Room"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /rooms/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags: [rooms]
+      summary: Get a room by id
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [rooms]
+      summary: Update a room
+      description: Restricted to MANAGER.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Room"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [rooms]
+      summary: Delete a room
+      description: Restricted to MANAGER.
+      responses:
+        "204":
+          description: No Content
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /seats:
+    post:
+      tags: [seats]
+      summary: Create a seat
+      description: Restricted to MANAGER. Body must reference an existing room id.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Seat"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Seat"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /seats/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags: [seats]
+      summary: Get a seat by id
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Seat"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [seats]
+      summary: Delete a seat
+      description: Restricted to MANAGER.
+      responses:
+        "204":
+          description: No Content
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /movies:
+    get:
+      tags: [movies]
+      summary: List movies
+      description: Visible to everyone (200 for CLIENT, EMPLOYEE and MANAGER).
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Movie"
+    put:
+      tags: [movies]
+      summary: Create or replace a movie
+      description: >
+        Restricted to MANAGER. Should return 403 for CLIENT and EMPLOYEE,
+        200 for MANAGER.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Movie"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movie"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /movies/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags: [movies]
+      summary: Get a movie by id
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movie"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [movies]
+      summary: Delete a movie
+      description: Restricted to MANAGER.
+      responses:
+        "204":
+          description: No Content
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /projections:
+    get:
+      tags: [projections]
+      summary: List projections
+      description: Should return 200 for everyone.
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Projection"
+    put:
+      tags: [projections]
+      summary: Create or replace a projection
+      description: >
+        Restricted to MANAGER. Should return 403 for CLIENT and EMPLOYEE,
+        200 for MANAGER.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Projection"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Projection"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /projections/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags: [projections]
+      summary: Get a projection by id
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Projection"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /reservations:
+    get:
+      tags: [reservations]
+      summary: List reservations
+      description: >
+        Should throw 403 for CLIENT. Should return 200 for MANAGER and
+        EMPLOYEE.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReservationResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [reservations]
+      summary: Create a reservation
+      description: >
+        Available to any authenticated user. The reservation's owner is
+        taken from the authenticated principal, never from the request
+        body.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+
+  /reservations/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags: [reservations]
+      summary: Get a reservation by id
+      description: >
+        Should return 200 if the CLIENT owns the reservation, 403 if it is
+        another CLIENT's reservation, 200 for MANAGER and EMPLOYEE.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [reservations]
+      summary: Update a reservation
+      description: >
+        Should return 403 for CLIENT, 200 for EMPLOYEE and MANAGER.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users:
+    post:
+      tags: [users]
+      summary: Register a user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+
+  /users/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags: [users]
+      summary: Get a user by id
+      description: A CLIENT may only fetch their own profile.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Caller's role does not allow this operation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+
+    Genre:
+      type: string
+      enum: [THRILLER, ROMANCE, COMEDY, DRAMA, ACTION, SCI_FI, FANTASY, ANIMATION]
+
+    UserRole:
+      type: string
+      enum: [CLIENT, EMPLOYEE, MANAGER]
+
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: string
+        capacity:
+          type: integer
+        seats:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/Seat"
+      required: [number, capacity]
+
+    Seat:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: string
+        room:
+          $ref: "#/components/schemas/RoomRef"
+      required: [number, room]
+
+    RoomRef:
+      type: object
+      description: Minimal room reference used when creating a seat/projection.
+      properties:
+        id:
+          type: string
+          format: uuid
+      required: [id]
+
+    Movie:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+        genres:
+          type: array
+          items:
+            $ref: "#/components/schemas/Genre"
+        description:
+          type: string
+        duration:
+          type: string
+          description: ISO-8601 duration, e.g. PT2H15M
+      required: [title, genres, duration]
+
+    MovieRef:
+      type: object
+      description: Minimal movie reference used when creating a projection.
+      properties:
+        id:
+          type: string
+          format: uuid
+      required: [id]
+
+    Projection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        datetime:
+          type: string
+          format: date-time
+        seatPrice:
+          type: number
+          format: decimal
+        movie:
+          $ref: "#/components/schemas/MovieRef"
+        room:
+          $ref: "#/components/schemas/RoomRef"
+      required: [datetime, seatPrice, movie, room]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthdate:
+          type: string
+          format: date
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRole"
+
+    UserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthdate:
+          type: string
+          format: date
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        phone:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRole"
+      required: [firstName, lastName, email, password, role]
+
+    UserResponse:
+      allOf:
+        - $ref: "#/components/schemas/User"
+      description: Same shape as User, but password is never included.
+
+    ReservationRequest:
+      type: object
+      description: userId is not part of the body — it comes from the authenticated principal.
+      properties:
+        projectionId:
+          type: string
+          format: uuid
+        seatIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required: [projectionId, seatIds]
+
+    ReservationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user:
+          $ref: "#/components/schemas/UserResponse"
+        projection:
+          $ref: "#/components/schemas/Projection"
+        seats:
+          type: array
+          items:
+            $ref: "#/components/schemas/Seat"
+        createdAt:
+          type: string
+          format: date-time
