@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hei.school.nmn.conf.FacadeIT;
+import hei.school.nmn.conf.JwtTestFactory;
 import hei.school.nmn.endpoint.dto.request.ReservationRequest;
 import hei.school.nmn.endpoint.dto.request.UserRequest;
 import hei.school.nmn.endpoint.dto.response.ReservationResponse;
@@ -41,6 +42,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 class ReservationIT extends FacadeIT {
@@ -59,6 +61,7 @@ class ReservationIT extends FacadeIT {
   @Autowired private ReservationRepository reservationRepository;
 
   @Autowired private TestRestTemplate restClient;
+  @Autowired private JwtTestFactory jwtTestFactory;
 
   @BeforeEach
   void cleanDatabase() {
@@ -149,21 +152,50 @@ class ReservationIT extends FacadeIT {
     UUID clientId = registerUser("client@example.com", UserRole.CLIENT);
     UUID managerId = registerUser("manager@example.com", UserRole.MANAGER);
     UUID movieId = createMovie();
+    String clientToken = jwtTestFactory.tokenFor(clientId, UserRole.CLIENT);
+    String managerToken = jwtTestFactory.tokenFor(managerId, UserRole.MANAGER);
 
-    ResponseEntity<String> forbidden = putMovie(clientId, movieId);
+    ResponseEntity<String> forbidden = putMovie(clientToken, movieId);
     assertThat(forbidden.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 
-    ResponseEntity<String> ok = putMovie(managerId, movieId);
+    ResponseEntity<String> ok = putMovie(managerToken, movieId);
     assertThat(ok.getStatusCode()).isEqualTo(HttpStatus.OK);
+  }
+
+  @Test
+  void should_create_reservation_via_http_with_principal_as_owner() {
+    UUID userId = registerUser("client@example.com", UserRole.CLIENT);
+    UUID movieId = createMovie();
+    Room room = createRoom("Room 1", 5);
+    UUID projectionId = createProjection(movieId, room.id());
+    List<UUID> seatIds = room.seats().stream().limit(2).map(Seat::id).toList();
+    String body =
+        "{\"projectionId\":\""
+            + projectionId
+            + "\",\"seatIds\":[\""
+            + seatIds.get(0)
+            + "\",\""
+            + seatIds.get(1)
+            + "\"]}";
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.setBearerAuth(jwtTestFactory.tokenFor(userId, UserRole.CLIENT));
+
+    ResponseEntity<String> response =
+        restClient.exchange(
+            "/api/reservations", HttpMethod.POST, new HttpEntity<>(body, headers), String.class);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).contains(userId.toString());
   }
 
   private ReservationStatus statusOf(UUID reservationId) {
     return reservationRepository.findById(reservationId).orElseThrow().getStatus();
   }
 
-  private ResponseEntity<String> putMovie(UUID userId, UUID movieId) {
+  private ResponseEntity<String> putMovie(String bearerToken, UUID movieId) {
     HttpHeaders headers = new HttpHeaders();
-    headers.set("userId", userId.toString());
+    headers.setBearerAuth(bearerToken);
     String body =
         "{"
             + "\"id\":\""
@@ -175,7 +207,7 @@ class ReservationIT extends FacadeIT {
             + "\"duration\":\"PT2H28M\""
             + "}";
     return restClient.exchange(
-        "/movies/" + movieId, HttpMethod.PUT, new HttpEntity<>(body, headers), String.class);
+        "/api/movies/" + movieId, HttpMethod.PUT, new HttpEntity<>(body, headers), String.class);
   }
 
   private UUID registerUser(String email, UserRole role) {

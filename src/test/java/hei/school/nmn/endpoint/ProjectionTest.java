@@ -3,10 +3,12 @@ package hei.school.nmn.endpoint;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import hei.school.nmn.conf.FacadeIT;
+import hei.school.nmn.conf.JwtTestFactory;
 import hei.school.nmn.entity.Movie;
 import hei.school.nmn.entity.Projection;
 import hei.school.nmn.entity.Room;
 import hei.school.nmn.entity.enums.Genre;
+import hei.school.nmn.entity.enums.UserRole;
 import hei.school.nmn.repository.MovieRepository;
 import hei.school.nmn.repository.ProjectionRepository;
 import hei.school.nmn.repository.RoomRepository;
@@ -40,6 +42,7 @@ class ProjectionTest extends FacadeIT {
   @Autowired private ProjectionRepository projectionRepository;
 
   @Autowired private TestRestTemplate restClient;
+  @Autowired private JwtTestFactory jwtTestFactory;
 
   @BeforeEach
   void cleanDatabase() {
