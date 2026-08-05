@@ -1,4 +1,3 @@
 package hei.school.nmn.conf;
 
-public class TestContainer {
-}
+public class TestContainer {}
