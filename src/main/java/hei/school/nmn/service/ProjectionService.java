@@ -47,6 +47,28 @@ public class ProjectionService {
         .collect(Collectors.toList());
   }
 
+  @Transactional
+  public Projection update(UUID id, Projection projection) {
+    JProjection existing =
+        projectionRepository
+            .findById(id)
+            .orElseThrow(() -> new NotFoundException("Projection not found: " + id));
+    JMovie movie =
+        movieRepository
+            .findById(projection.movie().id())
+            .orElseThrow(
+                () -> new NotFoundException("Movie not found: " + projection.movie().id()));
+    JRoom room =
+        roomRepository
+            .findById(projection.room().id())
+            .orElseThrow(() -> new NotFoundException("Room not found: " + projection.room().id()));
+    existing.setDatetime(projection.datetime());
+    existing.setSeatPrice(projection.seatPrice());
+    existing.setMovie(movie);
+    existing.setRoom(room);
+    return ProjectionMapper.toDomain(existing);
+  }
+
   @Transactional(readOnly = true)
   public Projection getById(UUID id) {
     return projectionRepository
