@@ -296,7 +296,10 @@ class ReservationIT extends FacadeIT {
 
   private ResponseEntity<String> getReservations(String bearerToken) {
     return restClient.exchange(
-        "/api/reservations", HttpMethod.GET, new HttpEntity<>(headersWithToken(bearerToken)), String.class);
+        "/api/reservations",
+        HttpMethod.GET,
+        new HttpEntity<>(headersWithToken(bearerToken)),
+        String.class);
   }
 
   private HttpHeaders headersWithToken(String bearerToken) {

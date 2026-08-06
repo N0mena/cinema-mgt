@@ -32,8 +32,7 @@ public class JwtTestFactory {
             .expiresAt(now.plusSeconds(3600))
             .build();
     return jwtEncoder
-        .encode(
-            JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims))
+        .encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims))
         .getTokenValue();
   }
 }
