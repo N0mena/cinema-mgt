@@ -8,6 +8,8 @@ import java.time.Instant;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -45,7 +47,10 @@ public class AuthService {
             .issuedAt(now)
             .expiresAt(now.plusSeconds(TOKEN_TTL_SECONDS))
             .build();
-    String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    String token =
+        jwtEncoder
+            .encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims))
+            .getTokenValue();
     return new LoginResponse(token);
   }
 }
