@@ -1,7 +1,8 @@
 package hei.school.nmn.endpoint;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -25,9 +26,12 @@ import hei.school.nmn.service.MovieService;
 import hei.school.nmn.service.ProjectionService;
 import hei.school.nmn.service.RoomService;
 import hei.school.nmn.service.UserService;
+import hei.school.nmn.service.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -36,6 +40,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@AutoConfigureMockMvc
 class ProjectionIT extends FacadeIT {
 
     @Autowired private UserService userService;
@@ -48,12 +54,14 @@ class ProjectionIT extends FacadeIT {
     @Autowired private RoomRepository roomRepository;
     @Autowired private SeatRepository seatRepository;
     @Autowired private ProjectionRepository projectionRepository;
+    @Autowired private ReservationRepository reservationRepository;
 
     @Autowired private TestRestTemplate restClient;
     @Autowired private JwtTestFactory jwtTestFactory;
 
     @BeforeEach
     void cleanDatabase() {
+        reservationRepository.deleteAll();
         projectionRepository.deleteAll();
         seatRepository.deleteAll();
         roomRepository.deleteAll();
@@ -116,6 +124,53 @@ class ProjectionIT extends FacadeIT {
         ResponseEntity<String> response = putProjection(managerToken, projectionId, movieId, room.id());
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void should_read_and_delete_projection() {
+        UUID movieId = createMovie();
+        Room room = createRoom("Room 1", 2);
+        UUID projectionId = createProjection(movieId, room.id());
+
+        assertThat(projectionService.getById(projectionId).id()).isEqualTo(projectionId);
+        assertThat(projectionService.getByMovie(movieId)).hasSize(1);
+        assertThat(projectionService.getUpcoming()).isNotEmpty();
+
+        projectionService.delete(projectionId);
+        assertThrows(NotFoundException.class, () -> projectionService.getById(projectionId));
+        assertThrows(NotFoundException.class, () -> projectionService.delete(projectionId));
+    }
+
+    @Test
+    void should_throw_when_projection_references_missing_entities() {
+        UUID movieId = createMovie();
+        Room room = createRoom("Room 1", 2);
+
+        assertThrows(
+                NotFoundException.class,
+                () ->
+                        projectionService.create(
+                                Projection.builder()
+                                        .datetime(Instant.now().plus(Duration.ofDays(1)))
+                                        .seatPrice(new BigDecimal("12.50"))
+                                        .movie(Movie.builder().id(UUID.randomUUID()).build())
+                                        .room(Room.builder().id(room.id()).build())
+                                        .build()));
+
+        assertThrows(
+                NotFoundException.class,
+                () ->
+                        projectionService.create(
+                                Projection.builder()
+                                        .datetime(Instant.now().plus(Duration.ofDays(1)))
+                                        .seatPrice(new BigDecimal("12.50"))
+                                        .movie(Movie.builder().id(movieId).build())
+                                        .room(Room.builder().id(UUID.randomUUID()).build())
+                                        .build()));
+
+        assertThrows(
+                NotFoundException.class,
+                () -> projectionService.getById(UUID.randomUUID()));
     }
 
     private ResponseEntity<String> getProjections(String bearerToken) {

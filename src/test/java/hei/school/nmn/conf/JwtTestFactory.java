@@ -4,6 +4,8 @@ import hei.school.nmn.entity.enums.UserRole;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -29,6 +31,9 @@ public class JwtTestFactory {
             .issuedAt(now)
             .expiresAt(now.plusSeconds(3600))
             .build();
-    return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    return jwtEncoder
+        .encode(
+            JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims))
+        .getTokenValue();
   }
 }

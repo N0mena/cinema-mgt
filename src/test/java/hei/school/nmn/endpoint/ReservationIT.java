@@ -2,6 +2,7 @@ package hei.school.nmn.endpoint;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import hei.school.nmn.conf.FacadeIT;
 import hei.school.nmn.conf.JwtTestFactory;
@@ -27,6 +28,7 @@ import hei.school.nmn.service.ProjectionService;
 import hei.school.nmn.service.ReservationService;
 import hei.school.nmn.service.RoomService;
 import hei.school.nmn.service.UserService;
+import hei.school.nmn.service.exception.NotFoundException;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -37,6 +39,8 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -45,6 +49,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@AutoConfigureMockMvc
 class ReservationIT extends FacadeIT {
 
   @Autowired private UserService userService;
@@ -189,6 +195,124 @@ class ReservationIT extends FacadeIT {
     assertThat(response.getBody()).contains(userId.toString());
   }
 
+  @Test
+  void should_get_reservations_as_employee_and_manager() {
+    UUID employeeId = registerUser("employee@example.com", UserRole.EMPLOYEE);
+    UUID managerId = registerUser("manager@example.com", UserRole.MANAGER);
+    String employeeToken = jwtTestFactory.tokenFor(employeeId, UserRole.EMPLOYEE);
+    String managerToken = jwtTestFactory.tokenFor(managerId, UserRole.MANAGER);
+
+    assertThat(getReservations(employeeToken).getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(getReservations(managerToken).getStatusCode()).isEqualTo(HttpStatus.OK);
+  }
+
+  @Test
+  void should_get_own_reservation_as_client() {
+    UUID userId = registerUser("client@example.com", UserRole.CLIENT);
+    ReservationResponse reservation = createReservationFor(userId);
+    String token = jwtTestFactory.tokenFor(userId, UserRole.CLIENT);
+
+    ResponseEntity<String> response =
+        restClient.exchange(
+            "/api/reservations/" + reservation.id(),
+            HttpMethod.GET,
+            new HttpEntity<>(headersWithToken(token)),
+            String.class);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).contains(userId.toString());
+  }
+
+  @Test
+  void should_forbid_client_access_to_other_reservation() {
+    UUID ownerId = registerUser("owner@example.com", UserRole.CLIENT);
+    UUID otherId = registerUser("other@example.com", UserRole.CLIENT);
+    ReservationResponse reservation = createReservationFor(ownerId);
+    String otherToken = jwtTestFactory.tokenFor(otherId, UserRole.CLIENT);
+
+    ResponseEntity<String> response =
+        restClient.exchange(
+            "/api/reservations/" + reservation.id(),
+            HttpMethod.GET,
+            new HttpEntity<>(headersWithToken(otherToken)),
+            String.class);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+  }
+
+  @Test
+  void should_get_any_reservation_as_manager() {
+    UUID ownerId = registerUser("owner@example.com", UserRole.CLIENT);
+    UUID managerId = registerUser("manager@example.com", UserRole.MANAGER);
+    ReservationResponse reservation = createReservationFor(ownerId);
+    String managerToken = jwtTestFactory.tokenFor(managerId, UserRole.MANAGER);
+
+    ResponseEntity<String> response =
+        restClient.exchange(
+            "/api/reservations/" + reservation.id(),
+            HttpMethod.GET,
+            new HttpEntity<>(headersWithToken(managerToken)),
+            String.class);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+  }
+
+  @Test
+  void should_read_reservations_by_user_projection_and_all() {
+    UUID userId = registerUser("client@example.com", UserRole.CLIENT);
+    ReservationResponse reservation = createReservationFor(userId);
+
+    assertThat(reservationService.getById(reservation.id()).id()).isEqualTo(reservation.id());
+    assertThat(reservationService.getByUser(userId)).hasSize(1);
+    assertThat(reservationService.getByProjection(reservation.projection().id())).hasSize(1);
+    assertThat(reservationService.getAll()).hasSize(1);
+    assertThrows(NotFoundException.class, () -> reservationService.getById(UUID.randomUUID()));
+  }
+
+  @Test
+  void should_throw_when_reservation_references_missing_entities() {
+    UUID userId = registerUser("client@example.com", UserRole.CLIENT);
+    UUID movieId = createMovie();
+    Room room = createRoom("Room 1", 2);
+    UUID projectionId = createProjection(movieId, room.id());
+    UUID seatId = room.seats().get(0).id();
+
+    assertThrows(
+        NotFoundException.class,
+        () ->
+            reservationService.create(
+                new ReservationRequest(projectionId, List.of(seatId)), UUID.randomUUID()));
+    assertThrows(
+        NotFoundException.class,
+        () ->
+            reservationService.create(
+                new ReservationRequest(UUID.randomUUID(), List.of(seatId)), userId));
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            reservationService.create(
+                new ReservationRequest(projectionId, List.of(UUID.randomUUID())), userId));
+  }
+
+  private ResponseEntity<String> getReservations(String bearerToken) {
+    return restClient.exchange(
+        "/api/reservations", HttpMethod.GET, new HttpEntity<>(headersWithToken(bearerToken)), String.class);
+  }
+
+  private HttpHeaders headersWithToken(String bearerToken) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(bearerToken);
+    return headers;
+  }
+
+  private ReservationResponse createReservationFor(UUID userId) {
+    UUID movieId = createMovie();
+    Room room = createRoom("Room 1", 2);
+    UUID projectionId = createProjection(movieId, room.id());
+    List<UUID> seatIds = room.seats().stream().limit(1).map(Seat::id).toList();
+    return reservationService.create(new ReservationRequest(projectionId, seatIds), userId);
+  }
+
   private ReservationStatus statusOf(UUID reservationId) {
     return reservationRepository.findById(reservationId).orElseThrow().getStatus();
   }
@@ -196,6 +320,7 @@ class ReservationIT extends FacadeIT {
   private ResponseEntity<String> putMovie(String bearerToken, UUID movieId) {
     HttpHeaders headers = new HttpHeaders();
     headers.setBearerAuth(bearerToken);
+    headers.setContentType(MediaType.APPLICATION_JSON);
     String body =
         "{"
             + "\"id\":\""

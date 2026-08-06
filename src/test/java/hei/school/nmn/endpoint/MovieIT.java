@@ -1,6 +1,8 @@
 package hei.school.nmn.endpoint;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -13,12 +15,19 @@ import hei.school.nmn.entity.Movie;
 import hei.school.nmn.entity.enums.Genre;
 import hei.school.nmn.entity.enums.UserRole;
 import hei.school.nmn.repository.MovieRepository;
+import hei.school.nmn.repository.ProjectionRepository;
+import hei.school.nmn.repository.ReservationRepository;
+import hei.school.nmn.repository.RoomRepository;
+import hei.school.nmn.repository.SeatRepository;
 import hei.school.nmn.repository.UserRepository;
 import hei.school.nmn.service.MovieService;
 import hei.school.nmn.service.UserService;
+import hei.school.nmn.service.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +36,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@AutoConfigureMockMvc
 class MovieIT extends FacadeIT {
 
     @Autowired private UserService userService;
@@ -34,12 +45,20 @@ class MovieIT extends FacadeIT {
 
     @Autowired private UserRepository userRepository;
     @Autowired private MovieRepository movieRepository;
+    @Autowired private ProjectionRepository projectionRepository;
+    @Autowired private SeatRepository seatRepository;
+    @Autowired private RoomRepository roomRepository;
+    @Autowired private ReservationRepository reservationRepository;
 
     @Autowired private TestRestTemplate restClient;
     @Autowired private JwtTestFactory jwtTestFactory;
 
     @BeforeEach
     void cleanDatabase() {
+        reservationRepository.deleteAll();
+        projectionRepository.deleteAll();
+        seatRepository.deleteAll();
+        roomRepository.deleteAll();
         movieRepository.deleteAll();
         userRepository.deleteAll();
     }
@@ -51,7 +70,6 @@ class MovieIT extends FacadeIT {
         String clientToken = jwtTestFactory.tokenFor(clientId, UserRole.CLIENT);
 
         ResponseEntity<String> response = getMovies(clientToken);
-
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
@@ -88,6 +106,56 @@ class MovieIT extends FacadeIT {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
+    @Test
+    void should_reject_update_movie_without_id() {
+        UUID managerId = registerUser("manager@example.com", UserRole.MANAGER);
+        String managerToken = jwtTestFactory.tokenFor(managerId, UserRole.MANAGER);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(managerToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String body = "{\"title\":\"Inception\",\"genre\":\"ACTION\",\"duration\":\"PT2H28M\"}";
+
+        ResponseEntity<String> response =
+                restClient.exchange(
+                        "/api/movies", HttpMethod.PUT, new HttpEntity<>(body, headers), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void should_get_movie_by_id_and_delete() {
+        UUID movieId = createMovie();
+
+        assertThat(movieService.getById(movieId).id()).isEqualTo(movieId);
+
+        movieService.delete(movieId);
+        assertThrows(NotFoundException.class, () -> movieService.getById(movieId));
+        assertThrows(NotFoundException.class, () -> movieService.delete(movieId));
+    }
+
+    @Test
+    void should_read_users_by_id_and_email() {
+        UUID userId = registerUser("reader@example.com", UserRole.CLIENT);
+
+        assertThat(userService.getById(userId).id()).isEqualTo(userId);
+        assertThat(userService.getEntityById(userId).id()).isEqualTo(userId);
+        assertThat(userService.getEntityByEmail("reader@example.com").id()).isEqualTo(userId);
+        assertThat(userService.getAll()).hasSize(1);
+
+        assertThrows(NotFoundException.class, () -> userService.getById(UUID.randomUUID()));
+        assertThrows(
+                NotFoundException.class, () -> userService.getEntityByEmail("missing@example.com"));
+    }
+
+    @Test
+    void should_reject_duplicate_email_registration() {
+        registerUser("duplicate@example.com", UserRole.CLIENT);
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> registerUser("duplicate@example.com", UserRole.CLIENT));
+    }
+
     private ResponseEntity<String> getMovies(String bearerToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(bearerToken);
@@ -105,7 +173,7 @@ class MovieIT extends FacadeIT {
                         + movieId
                         + "\","
                         + "\"title\":\"Inception\","
-                        + "\"genre\":[\"ACTION\"],"
+                        + "\"genre\":\"ACTION\","
                         + "\"description\":\"A thief steals secrets from dreams\","
                         + "\"duration\":\"PT2H28M\""
                         + "}";
