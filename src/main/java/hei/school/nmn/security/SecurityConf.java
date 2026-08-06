@@ -79,8 +79,11 @@ public class SecurityConf {
                     .requestMatchers(HttpMethod.POST, "/api/users", "/api/auth/login")
                     .permitAll()
                     .requestMatchers(
-                        HttpMethod.PUT, "/api/movies", "/api/movies/{id}", "/api/projection")
+                        HttpMethod.PUT, "/api/movies", "/api/movies/{id}", "/api/projection", "/api/projections/{id}")
                     .hasRole("MANAGER")
+                        . requestMatchers(
+                        HttpMethod.POST,  "/api/projection")
+                        .hasRole("MANAGER")
                     .requestMatchers(HttpMethod.GET, "/api/reservations")
                     .hasAnyRole("EMPLOYEE", "MANAGER")
                     .requestMatchers(HttpMethod.PUT, "/api/reservations/{id}")
