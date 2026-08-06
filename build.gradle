@@ -50,7 +50,20 @@ jacocoTestCoverageVerification {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    "**/gen/**"
+                    "**/gen/**",
+                    "**/endpoint/event/**",
+                    "**/endpoint/rest/controller/health/**",
+                    "**/service/event/**",
+                    "**/file/**",
+                    "**/mail/**",
+                    "**/handler/**",
+                    "**/concurrency/**",
+                    "**/datastructure/**",
+                    "**/PojaApplication.class",
+                    "**/PojaGenerated.class",
+                    "**/Dummy*.class",
+                    "**/RequestLoggerConfigurer.class",
+                    "**/EndpointConf.class"
             ])
         }))
     }
@@ -58,7 +71,7 @@ jacocoTestCoverageVerification {
         rule {
             limit {
                 counter = "LINE"
-                minimum = 0
+                minimum = 0.80
             }
         }
     }
@@ -75,7 +88,20 @@ jacocoTestReport {
         // else display coverageRate is inconsistent with what was computed during coverage...
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    "**/gen/**"
+                    "**/gen/**",
+                    "**/endpoint/event/**",
+                    "**/endpoint/rest/controller/health/**",
+                    "**/service/event/**",
+                    "**/file/**",
+                    "**/mail/**",
+                    "**/handler/**",
+                    "**/concurrency/**",
+                    "**/datastructure/**",
+                    "**/PojaApplication.class",
+                    "**/PojaGenerated.class",
+                    "**/Dummy*.class",
+                    "**/RequestLoggerConfigurer.class",
+                    "**/EndpointConf.class"
             ])
         }))
     }
@@ -110,6 +136,9 @@ jacocoTestReport {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web:3.2.2'
+    implementation 'org.springframework.boot:spring-boot-starter-security:3.2.2'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.2.2'
+    implementation 'org.springframework.security:spring-security-crypto'
     testImplementation 'org.testcontainers:testcontainers:2.0.2'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.2.2'
     implementation 'org.flywaydb:flyway-core:9.22.3'
