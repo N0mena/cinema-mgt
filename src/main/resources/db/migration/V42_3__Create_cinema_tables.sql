@@ -58,3 +58,10 @@ create table if not exists reservation_seats
     seat_id        uuid not null references seats (id),
     primary key (reservation_id, seat_id)
 );
+
+create  table if not exists receipts(
+    id uuid primary key,
+    reservation_id integer references reservations (id),
+    createdAt timestamp deflaut now(),
+    file_path varchar(250)
+);
